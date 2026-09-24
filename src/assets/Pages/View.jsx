@@ -12,7 +12,7 @@ import {
 import { FaFileDownload } from "react-icons/fa";
 import { FaBackward } from "react-icons/fa6";
 import { useNavigate, useParams } from "react-router-dom";
-// import Edit from "../components/Edit";
+import Edit from '../Components/Edit'
 import { addToHistoryResumeAPI, viewResumeAPI,uploadToCloudinary } from "../../Services/apiServices";
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'

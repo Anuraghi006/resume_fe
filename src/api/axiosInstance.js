@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosinstance = axios.create({
-  baseURL: "hhttps://ai-resume-builder-be-y3lc.onrender.com/",
+  baseURL: "http://localhost:3000",
   timeout: 5000,
 });
 
