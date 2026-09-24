@@ -1,0 +1,26 @@
+#hero{
+    width: 100%;
+    height: 700px;
+    background-image: url(https://www.rbc.com/en/future-launch/wp-content/uploads/sites/9/2023/02/article13-header.512b34e4.jpg?resize=1024,683);
+    background-position: top;
+    background-size: cover;
+    background-attachment: fixed;
+    padding: 60px 0px;
+}
+
+#box{
+    background-color:rgba(255, 255, 0, 0.258);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#hero1{
+    width: 100%;
+    height: 700px;
+    background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQz5TTTvpyZSWu5D1YuIZ9n4LPq0EW2gzejnS2uykXaVw&s=10);
+    background-position: top;
+    background-size: cover;
+    background-attachment: fixed;
+    padding: 60px 0px;
+}
