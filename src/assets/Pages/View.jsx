@@ -17,7 +17,7 @@ import { addToHistoryResumeAPI, viewResumeAPI,uploadToCloudinary } from "../../S
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import Swal from 'sweetalert2'
-
+import Edit from "../components/Edit";
 
 
 function View({ resumeDetails }) {
