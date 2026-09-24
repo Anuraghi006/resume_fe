@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosinstance = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://resume-be-vnmm.onrender.com/",
   timeout: 5000,
 });
 
