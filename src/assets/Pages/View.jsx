@@ -2,157 +2,142 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Chip,
   Container,
-  Divider,
+  Link,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
-import { FaFileDownload } from "react-icons/fa";
+import {
+  FaFileDownload,
+  FaEnvelope,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
+  FaLinkedin,
+  FaGithub,
+  FaGlobe,
+} from "react-icons/fa";
 import { FaBackward } from "react-icons/fa6";
 import { useNavigate, useParams } from "react-router-dom";
-import Edit from '../Components/Edit'
-import { addToHistoryResumeAPI, viewResumeAPI,uploadToCloudinary } from "../../Services/apiServices";
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-import Swal from 'sweetalert2'
+import Edit from "../Components/Edit";
+import {
+  addToHistoryResumeAPI,
+  viewResumeAPI,
+  uploadToCloudinary,
+} from "../../Services/apiServices";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import Swal from "sweetalert2";
 
-function View({ resumeDetails }) {
+const formatUrl = (url) => {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
 
+const SectionHeading = ({ title }) => (
+  <Typography
+    sx={{
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontWeight: "bold",
+      fontSize: "0.95rem",
+      textTransform: "uppercase",
+      letterSpacing: "0.03em",
+      borderBottom: "1px solid #000",
+      pb: 0.3,
+      mt: 2.2,
+      mb: 1,
+      color: "#000",
+    }}
+  >
+    {title}
+  </Typography>
+);
 
-  //get id from the url
-  const {id} = useParams()
-  console.log(id);
+const linkSx = {
+  color: "#000",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+  fontSize: "0.8rem",
+  fontFamily: 'Georgia, "Times New Roman", serif',
+  "&:hover": { textDecoration: "underline" },
+};
 
-  const [resume,setResume]=useState({})
-  //viewing  
-  const viewResume=async(id)=>{
-    try{
-      const res = await viewResumeAPI(id)
-      console.log(res);
-      setResume(res.data)
-    }
-    catch(err){
-      console.log(err);
-    }
-  }
-  useEffect(()=>{
-    viewResume(id)
-  },[])
-
-// download
-const handlePdfDownload=async()=>{
-  // checking if the paper is accessible when button clicked
-   console.log(document.getElementById('result'));
-  
-    
-  // to take screenshot
-  // passs the paper to canvas
-  // add scale 3 for image clarrity
-  const canvas= await html2canvas(document.getElementById('result'),{scale:3})
-  console.log(canvas);
-
-
-// to covert the canvas to imgae url 
-// define the type as image/png in strings
-const imgData=canvas.toDataURL("image/png")
-console.log(imgData);
-
-
-// to generate pdf
-// p-potrait 
-const pdf=new jsPDF('p','mm','a4')
-//define width and height of pdf
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = (canvas.height * pdfWidth)/canvas.width;
-    //add image to pdf
-    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
-    //save the pdf
-    pdf.save('resume.pdf')
-//get current date and time
-    const timezone = new Date()
-    console.log(timezone);
-    //formated date and time
-    const formatedDate = `${timezone.toLocaleDateString()} ,  ${timezone.toLocaleTimeString()}`
-    console.log(formatedDate);
-
-
-
-
-  console.log(resume);
-  try{
-// API calling for cloudinary
-    const cloudinaryResponse =
-      await uploadToCloudinary(imgData);
-
-    console.log("Cloudinary:", cloudinaryResponse);
-
-    // Save only URL in JSON Server
-    const response = await addToHistoryResumeAPI({
-      ...resume,
-
-      // new history id
-      id: Date.now(),
-
-      // original resume id
-      resumeId: resume.id,
-
-      formatedDate:
-        `${new Date().toLocaleDateString()}, ${new Date().toLocaleTimeString()}`,
-
-      imageUrl: cloudinaryResponse.secure_url
-    });
-
-    console.log("History:", response);
-
-
-  //  API calling for adding to history
-  // const res= await addToHistoryResumeAPI(resume)
-  // console.log(res);
-  
-if(response.status===201){
-  Swal.fire({
-  title: "Downloaded",
-  text: "Resume downloaded successfully",
-  icon: "success"
-});
-}
-else{
-   Swal.fire({
-  title: "Error!",
-  text: "Resume downloading failed",
-  icon: "error"
-});
-}
-  }
-
-
-  catch(err){
-    console.log(err);
-    Swal.fire({
-  title: "Error",
-  text: "Resume downloading failed",
-  icon: "error"
-});
-  }
-}
-
+function View() {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [resume, setResume] = useState({});
 
-  // const handleDownload = () => {
-  //   window.print();
-  // };
+  const viewResume = async (resumeId) => {
+    try {
+      const res = await viewResumeAPI(resumeId);
+      setResume(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      viewResume(id);
+    }
+  }, [id]);
+
+  const handlePdfDownload = async () => {
+    const element = document.getElementById("result");
+    const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("resume.pdf");
+
+    try {
+      const cloudinaryResponse = await uploadToCloudinary(imgData);
+      const response = await addToHistoryResumeAPI({
+        ...resume,
+        id: Date.now(),
+        resumeId: resume.id,
+        formatedDate: `${new Date().toLocaleDateString()}, ${new Date().toLocaleTimeString()}`,
+        imageUrl: cloudinaryResponse.secure_url,
+      });
+
+      if (response.status === 201) {
+        Swal.fire({
+          title: "Downloaded",
+          text: "Resume downloaded successfully",
+          icon: "success",
+        });
+      } else {
+        Swal.fire({
+          title: "Error!",
+          text: "Resume downloading failed",
+          icon: "error",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        title: "Error",
+        text: "Resume downloading failed",
+        icon: "error",
+      });
+    }
+  };
+
+  const linkedinUrl = resume?.linkedin || resume?.linkedIn;
+  const languageList = Array.isArray(resume?.languages)
+    ? resume.languages
+    : (resume?.languages || "")
+        .split(",")
+        .map((l) => l.trim())
+        .filter(Boolean);
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "#F5F5F5",
-        py: 5,
-        px: 2,
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", bgcolor: "#F5F5F5", py: 5, px: 2 }}>
       <Container maxWidth="md">
         {/* Top Action Buttons */}
         <Stack
@@ -164,12 +149,13 @@ else{
         >
           <Button
             startIcon={<FaFileDownload />}
-            sx={{ color: "#7B4A2E", fontWeight: 600 }} onClick={handlePdfDownload}
+            sx={{ color: "#7B4A2E", fontWeight: 600 }}
+            onClick={handlePdfDownload}
           >
             Download CV
           </Button>
 
-<Edit resume={resume} setResume={setResume}/>
+          <Edit resume={resume} setResume={setResume} />
 
           <Button
             startIcon={<FaBackward />}
@@ -181,103 +167,317 @@ else{
         </Stack>
 
         {/* Resume Paper */}
-        <Paper id="result"
+        <Paper
+          id="result"
           elevation={4}
           sx={{
             width: "100%",
-            maxWidth: 850,
+            maxWidth: 794,
             mx: "auto",
-            p: { xs: 3, sm: 5, md:6 },
-            borderRadius: 2,
-            bgcolor: "#FAFAFA",
+            p: { xs: 3, sm: 5 },
+            borderRadius: 1,
+            bgcolor: "#FFFFFF",
+            color: "#000",
+            fontFamily: 'Georgia, "Times New Roman", serif',
           }}
         >
-          {/* Name */}
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            gutterBottom
-            sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}
-          >
-            {resume?.fullName}
-          </Typography>
+          {/* Header */}
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <Typography
+              sx={{
+                fontFamily: "inherit",
+                fontWeight: "bold",
+                fontSize: "1.75rem",
+                lineHeight: 1.2,
+              }}
+            >
+              {resume?.fullName}
+            </Typography>
 
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            gutterBottom
-            sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}
-          >
-            {resume?.jobTitle}
-          </Typography>
-
-          {/* Contact */}
-          <Stack spacing={0.5}>
-            <Typography>Phone: {resume?.contactNumber}</Typography>
-            <Typography>Email: {resume?.email}</Typography>
-            <Typography>LinkedIn: {resume?.linkedIn}</Typography>
-            <Typography>Github: {resume?.github}</Typography>
-            <Typography>Location: {resume?.location}</Typography>
-          </Stack>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Summary */}
-          <Typography variant="h5" fontWeight="bold" mb={1}>
-            Professional Summary
-          </Typography>
-
-          <Typography color="text.secondary">
-            {resume?.summary}
-          </Typography>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Skills */}
-          <Typography variant="h5" fontWeight="bold" mb={2}>
-            Technical Skills
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 1,
-            }}
-          >
-            {resume?.skills?.map((item, index) => (
-              <Chip
-                key={index}
-                label={item}
-                variant="outlined"
+            {resume?.jobTitle && (
+              <Typography
                 sx={{
-                  borderColor: "#7B4A2E",
-                  color: "#7B4A2E",
+                  fontFamily: "inherit",
+                  fontStyle: "italic",
+                  fontSize: "1.05rem",
+                  mt: 0.3,
                 }}
-              />
-            ))}
+              >
+                {resume.jobTitle}
+              </Typography>
+            )}
+
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
+                mt: 1,
+              }}
+            >
+              {resume?.email && (
+                <Link href={`mailto:${resume.email}`} sx={linkSx}>
+                  <FaEnvelope size={12} />
+                  {resume.email}
+                </Link>
+              )}
+              {resume?.contactNumber && (
+                <Link href={`tel:${resume.contactNumber}`} sx={linkSx}>
+                  <FaPhoneAlt size={12} />
+                  {resume.contactNumber}
+                </Link>
+              )}
+              {resume?.location && (
+                <Typography sx={{ ...linkSx, "&:hover": {} }}>
+                  <FaMapMarkerAlt size={12} />
+                  {resume.location}
+                </Typography>
+              )}
+              {linkedinUrl && (
+                <Link
+                  href={formatUrl(linkedinUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={linkSx}
+                >
+                  <FaLinkedin size={13} />
+                  LinkedIn
+                </Link>
+              )}
+              {resume?.github && (
+                <Link
+                  href={formatUrl(resume.github)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={linkSx}
+                >
+                  <FaGithub size={13} />
+                  GitHub
+                </Link>
+              )}
+              {resume?.portfolio && (
+                <Link
+                  href={formatUrl(resume.portfolio)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={linkSx}
+                >
+                  <FaGlobe size={12} />
+                  Portfolio
+                </Link>
+              )}
+            </Box>
           </Box>
 
-          <Divider sx={{ my: 3 }} />
+          {/* Summary */}
+          {resume?.summary && (
+            <>
+              <SectionHeading title="Summary" />
+              <Typography sx={{ fontFamily: "inherit", fontSize: "0.86rem", lineHeight: 1.5 }}>
+                {resume.summary}
+              </Typography>
+            </>
+          )}
+
+          {/* Skills */}
+          {(Array.isArray(resume?.skills)
+            ? resume.skills.length > 0
+            : Object.keys(resume?.skills || {}).length > 0) && (
+            <>
+              <SectionHeading title="Skills" />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4, fontSize: "0.86rem" }}>
+                {Array.isArray(resume.skills) ? (
+                  <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                    {resume.skills.join(", ")}
+                  </Typography>
+                ) : (
+                  Object.entries(resume.skills).map(([category, items]) => (
+                    <Typography key={category} sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                      <strong>{category}:</strong>{" "}
+                      {Array.isArray(items) ? items.join(", ") : items}
+                    </Typography>
+                  ))
+                )}
+              </Box>
+            </>
+          )}
+
+          {/* Professional Experience */}
+          {resume?.experience?.some((exp) => exp.role || exp.company) && (
+            <>
+              <SectionHeading title="Professional Experience" />
+              {resume.experience.map((exp, idx) =>
+                exp.role || exp.company ? (
+                  <Box key={idx} sx={{ mb: 1.5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.88rem" }}>
+                      <Typography sx={{ fontFamily: "inherit", fontWeight: "bold", fontSize: "inherit" }}>
+                        {exp.role}
+                      </Typography>
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                        {exp.duration}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.86rem" }}>
+                      <Typography sx={{ fontFamily: "inherit", fontStyle: "italic", fontSize: "inherit" }}>
+                        {exp.company}
+                      </Typography>
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                        {exp.location}
+                      </Typography>
+                    </Box>
+                    {exp.description && (
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "0.84rem", lineHeight: 1.45, mt: 0.5 }}>
+                        {exp.description}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : null
+              )}
+            </>
+          )}
+
+          {/* Projects */}
+          {resume?.projects?.some((proj) => proj.title) && (
+            <>
+              <SectionHeading title="Projects" />
+              {resume.projects.map((proj, idx) =>
+                proj.title ? (
+                  <Box key={idx} sx={{ mb: 1.2 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.86rem" }}>
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                        {proj.link ? (
+                          <Link
+                            href={formatUrl(proj.link)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                              color: "#000",
+                              fontWeight: "bold",
+                              textDecoration: "none",
+                              "&:hover": { textDecoration: "underline" },
+                            }}
+                          >
+                            {proj.title}
+                          </Link>
+                        ) : (
+                          <strong>{proj.title}</strong>
+                        )}
+                        {proj.techStack ? ` | ${proj.techStack}` : ""}
+                      </Typography>
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                        {proj.date}
+                      </Typography>
+                    </Box>
+                    {proj.description && (
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "0.84rem", lineHeight: 1.45, mt: 0.3 }}>
+                        {proj.description}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : null
+              )}
+            </>
+          )}
+
+          {/* Certificates */}
+          {resume?.certificates?.some((cert) => cert.title) && (
+            <>
+              <SectionHeading title="Certificates" />
+              {resume.certificates.map((cert, idx) =>
+                cert.title ? (
+                  <Box key={idx} sx={{ mb: 1.2 }}>
+                    <Typography sx={{ fontFamily: "inherit", fontWeight: "bold", fontSize: "0.86rem" }}>
+                      {cert.link ? (
+                        <Link
+                          href={formatUrl(cert.link)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            color: "#000",
+                            textDecoration: "none",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          {cert.title}
+                        </Link>
+                      ) : (
+                        cert.title
+                      )}
+                    </Typography>
+                    {cert.description && (
+                      <Typography sx={{ fontFamily: "inherit", fontSize: "0.84rem", lineHeight: 1.45, mt: 0.3 }}>
+                        {cert.description}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : null
+              )}
+            </>
+          )}
+
+          {/* Languages */}
+          {languageList.length > 0 && (
+            <>
+              <SectionHeading title="Languages" />
+              <Typography sx={{ fontFamily: "inherit", fontSize: "0.86rem" }}>
+                {languageList.join(" • ")}
+              </Typography>
+            </>
+          )}
 
           {/* Education */}
-          <Typography variant="h5" fontWeight="bold" mb={2}>
-            Education
-          </Typography>
-
-          <Stack spacing={1}>
-            <Typography>
-              <strong>Degree:</strong> {resume?.degree}
-            </Typography>
-
-            <Typography>
-              <strong>University/College:</strong> {resume?.college}
-            </Typography>
-
-            <Typography>
-              <strong>Year of Graduation:</strong> {resume?.year}
-            </Typography>
-          </Stack>
+          {(resume?.education?.some((edu) => edu.degree || edu.college) ||
+            resume?.degree ||
+            resume?.college) && (
+            <>
+              <SectionHeading title="Education" />
+              {Array.isArray(resume?.education) ? (
+                resume.education.map((edu, idx) =>
+                  edu.degree || edu.college ? (
+                    <Box key={idx} sx={{ mb: 1.2 }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.86rem" }}>
+                        <Typography sx={{ fontFamily: "inherit", fontWeight: "bold", fontSize: "inherit" }}>
+                          {edu.degree}
+                        </Typography>
+                        <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                          {edu.duration}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.86rem" }}>
+                        <Typography sx={{ fontFamily: "inherit", fontStyle: "italic", fontSize: "inherit" }}>
+                          {edu.college}
+                        </Typography>
+                        <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                          {edu.location}
+                        </Typography>
+                      </Box>
+                      {edu.description && (
+                        <Typography sx={{ fontFamily: "inherit", fontSize: "0.84rem", lineHeight: 1.45, mt: 0.3 }}>
+                          {edu.description}
+                        </Typography>
+                      )}
+                    </Box>
+                  ) : null
+                )
+              ) : (
+                <Box sx={{ mb: 1.2 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: "0.86rem" }}>
+                    <Typography sx={{ fontFamily: "inherit", fontWeight: "bold", fontSize: "inherit" }}>
+                      {resume?.degree}
+                    </Typography>
+                    <Typography sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
+                      {resume?.year}
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ fontFamily: "inherit", fontStyle: "italic", fontSize: "0.86rem" }}>
+                    {resume?.college}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          )}
         </Paper>
       </Container>
     </Box>
