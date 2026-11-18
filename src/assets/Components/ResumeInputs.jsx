@@ -21,10 +21,10 @@ import { useNavigate } from 'react-router-dom';
 
 const steps = [
   'Basic Info',
-  'Links & Contact',
-  'Skills & Summary',
+  'Contact & Links',
   'Experience & Projects',
   'Education, Certs & Languages',
+  'Review & Submit',
 ];
 
 function ResumeInputs({ resumeDetails, setResumeDetails }) {
@@ -52,7 +52,6 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
     setSkipped((prev) => new Set(prev).add(activeStep));
   };
 
-  // Generic array-section helpers
   const updateArrayItem = (section, index, field, value) => {
     const updated = [...resumeDetails[section]];
     updated[index] = { ...updated[index], [field]: value };
@@ -74,21 +73,30 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
     });
   };
 
-  const handleSkillsAndSummary = () => {
+  const handleSkillsAndSummary = async () => {
     setResumeDetails({
       ...resumeDetails,
-      skills: jobSkills[resumeDetails.jobTitle] || resumeDetails.skills,
-      summary: resumeDetails.summary || summaries[resumeDetails.jobTitle] || '',
+      skills: jobSkills[resumeDetails.jobTitle] || [],
+      summary: summaries[resumeDetails.jobTitle] || '',
     });
     handleNext();
   };
 
   const handleSubmit = async () => {
-    const { fullName, location, jobTitle, email, contactNumber, summary } = resumeDetails;
-    if (!fullName || !location || !jobTitle || !email || !contactNumber || !summary) {
+    const { fullName, location, jobTitle, email, contactNumber, skills, summary } = resumeDetails;
+    if (
+      !fullName ||
+      !location ||
+      !jobTitle ||
+      !email ||
+      !contactNumber ||
+      !summary ||
+      !skills ||
+      skills.length === 0
+    ) {
       Swal.fire({
         title: 'Warning',
-        text: 'Please fill in all required fields (Name, Location, Job Title, Email, Phone, Summary).',
+        text: 'Please fill the form',
         icon: 'warning',
       });
       return;
@@ -196,71 +204,6 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
       case 2:
         return (
           <Box sx={{ p: 3 }}>
-            <Typography variant="h5" sx={{ mb: 3 }}>Summary &amp; Categorized Skills</Typography>
-            <Stack spacing={2}>
-              <TextField
-                label="Professional Summary"
-                multiline
-                rows={4}
-                fullWidth
-                value={resumeDetails.summary}
-                onChange={(e) => setResumeDetails({ ...resumeDetails, summary: e.target.value })}
-              />
-              <TextField
-                label="Frontend Skills"
-                placeholder="React.js, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS..."
-                fullWidth
-                value={resumeDetails.skillCategories.frontend}
-                onChange={(e) =>
-                  setResumeDetails({
-                    ...resumeDetails,
-                    skillCategories: { ...resumeDetails.skillCategories, frontend: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                label="APIs & Data"
-                placeholder="REST APIs, JSON, asynchronous HTTP requests"
-                fullWidth
-                value={resumeDetails.skillCategories.apis}
-                onChange={(e) =>
-                  setResumeDetails({
-                    ...resumeDetails,
-                    skillCategories: { ...resumeDetails.skillCategories, apis: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                label="Backend Skills"
-                placeholder="Node.js, Express.js, MongoDB"
-                fullWidth
-                value={resumeDetails.skillCategories.backend}
-                onChange={(e) =>
-                  setResumeDetails({
-                    ...resumeDetails,
-                    skillCategories: { ...resumeDetails.skillCategories, backend: e.target.value },
-                  })
-                }
-              />
-              <TextField
-                label="Tools"
-                placeholder="Git, GitHub, Vite, Webpack, Vercel, Netlify"
-                fullWidth
-                value={resumeDetails.skillCategories.tools}
-                onChange={(e) =>
-                  setResumeDetails({
-                    ...resumeDetails,
-                    skillCategories: { ...resumeDetails.skillCategories, tools: e.target.value },
-                  })
-                }
-              />
-            </Stack>
-          </Box>
-        );
-
-      case 3:
-        return (
-          <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ mb: 2 }}>Professional Experience</Typography>
             {resumeDetails.experience.map((exp, idx) => (
               <Stack key={idx} spacing={1.5} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
@@ -276,7 +219,11 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
                 )}
               </Stack>
             ))}
-            <Button variant="outlined" size="small" onClick={() => addArrayItem('experience', { role: '', company: '', duration: '', location: '', description: '' })}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => addArrayItem('experience', { role: '', company: '', duration: '', location: '', description: '' })}
+            >
               + Add Experience
             </Button>
 
@@ -297,13 +244,17 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
                 )}
               </Stack>
             ))}
-            <Button variant="outlined" size="small" onClick={() => addArrayItem('projects', { title: '', techStack: '', date: '', link: '', description: '' })}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => addArrayItem('projects', { title: '', techStack: '', date: '', link: '', description: '' })}
+            >
               + Add Project
             </Button>
           </Box>
         );
 
-      case 4:
+      case 3:
         return (
           <Box sx={{ p: 3 }}>
             <Typography variant="h5" sx={{ mb: 2 }}>Education</Typography>
@@ -321,7 +272,11 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
                 )}
               </Stack>
             ))}
-            <Button variant="outlined" size="small" onClick={() => addArrayItem('education', { degree: '', college: '', duration: '', location: '', description: '' })}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => addArrayItem('education', { degree: '', college: '', duration: '', location: '', description: '' })}
+            >
               + Add Education
             </Button>
 
@@ -338,7 +293,11 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
                 )}
               </Stack>
             ))}
-            <Button variant="outlined" size="small" onClick={() => addArrayItem('certificates', { title: '', link: '', description: '' })}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => addArrayItem('certificates', { title: '', link: '', description: '' })}
+            >
               + Add Certificate
             </Button>
 
@@ -351,6 +310,16 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
               value={resumeDetails.languages}
               onChange={(e) => setResumeDetails({ ...resumeDetails, languages: e.target.value })}
             />
+          </Box>
+        );
+
+      case 4:
+        return (
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h5" sx={{ mb: 3 }}>Summary &amp; Review</Typography>
+            <Typography variant="body1">
+              Review your details and click &quot;Make Resume&quot; to generate your skills and summary before submitting.
+            </Typography>
           </Box>
         );
 
@@ -405,7 +374,7 @@ function ResumeInputs({ resumeDetails, setResumeDetails }) {
             )}
             {activeStep === steps.length - 1 ? (
               <Button variant="contained" onClick={handleSkillsAndSummary}>
-                Generate Skills And Summary
+                Make Resume
               </Button>
             ) : (
               <Button variant="contained" onClick={handleNext}>

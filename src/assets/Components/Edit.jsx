@@ -35,31 +35,9 @@ const style = {
 
 function Edit({ resume, setResume }) {
   const [open, setOpen] = React.useState(false);
-  const skillsRef = React.useRef();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  const addSkill = (skill) => {
-    const trimmed = skill?.trim();
-    if (!trimmed) return;
-    const exists = resume?.skills?.some(
-      (item) => item.toLowerCase() === trimmed.toLowerCase()
-    );
-    if (exists) {
-      alert('Skill already exists');
-    } else {
-      setResume({ ...resume, skills: [...(resume?.skills || []), trimmed] });
-    }
-    skillsRef.current.value = '';
-  };
-
-  const handleRemoveSkill = (skill) => {
-    setResume({
-      ...resume,
-      skills: (resume?.skills || []).filter((item) => item !== skill),
-    });
-  };
 
   const updateArrayItem = (section, index, field, value) => {
     const updated = [...(resume?.[section] || [])];
@@ -67,9 +45,25 @@ function Edit({ resume, setResume }) {
     setResume({ ...resume, [section]: updated });
   };
 
+  const addArrayItem = (section, template) => {
+    setResume({
+      ...resume,
+      [section]: [...(resume?.[section] || []), template],
+    });
+  };
+
   const handleUpdate = async () => {
-    const { fullName, location, jobTitle, email, contactNumber, summary } = resume;
-    if (!fullName || !location || !jobTitle || !email || !contactNumber || !summary) {
+    const { fullName, location, jobTitle, email, contactNumber, summary, skills } = resume;
+    if (
+      !fullName ||
+      !location ||
+      !jobTitle ||
+      !email ||
+      !contactNumber ||
+      !summary ||
+      !skills ||
+      skills.length === 0
+    ) {
       handleClose();
       Swal.fire({
         title: 'Warning',
@@ -182,84 +176,25 @@ function Edit({ resume, setResume }) {
 
           <Divider sx={{ my: 3 }} />
 
-          {/* Summary */}
-          <Typography variant="h6" fontWeight="bold" mb={2}>Professional Summary</Typography>
-          <TextField
-            label="Summary"
-            multiline
-            rows={4}
-            fullWidth
-            value={resume?.summary || ''}
-            onChange={(e) => setResume({ ...resume, summary: e.target.value })}
-          />
+          {/* Summary (Read-only from DB) */}
+          <Typography variant="h6" fontWeight="bold" mb={1}>Professional Summary</Typography>
+          <Typography sx={{ color: '#555', lineHeight: 1.8 }}>
+            {resume?.summary}
+          </Typography>
 
           <Divider sx={{ my: 3 }} />
 
-          {/* Categorized Skills */}
-          <Typography variant="h6" fontWeight="bold" mb={2}>Categorized Skills</Typography>
-          <Stack spacing={2} mb={2}>
-            <TextField
-              label="Frontend"
-              fullWidth
-              value={resume?.skillCategories?.frontend || ''}
-              onChange={(e) =>
-                setResume({
-                  ...resume,
-                  skillCategories: { ...resume.skillCategories, frontend: e.target.value },
-                })
-              }
-            />
-            <TextField
-              label="APIs & Data"
-              fullWidth
-              value={resume?.skillCategories?.apis || ''}
-              onChange={(e) =>
-                setResume({
-                  ...resume,
-                  skillCategories: { ...resume.skillCategories, apis: e.target.value },
-                })
-              }
-            />
-            <TextField
-              label="Backend"
-              fullWidth
-              value={resume?.skillCategories?.backend || ''}
-              onChange={(e) =>
-                setResume({
-                  ...resume,
-                  skillCategories: { ...resume.skillCategories, backend: e.target.value },
-                })
-              }
-            />
-            <TextField
-              label="Tools"
-              fullWidth
-              value={resume?.skillCategories?.tools || ''}
-              onChange={(e) =>
-                setResume({
-                  ...resume,
-                  skillCategories: { ...resume.skillCategories, tools: e.target.value },
-                })
-              }
-            />
-          </Stack>
-
-          {/* Additional Skills */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-            <TextField label="Add Additional Skill" fullWidth inputRef={skillsRef} />
-            <Button onClick={() => addSkill(skillsRef.current.value)} sx={{ color: '#74462d' }}>
-              ADD
-            </Button>
-          </Box>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
-            {resume?.skills?.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                onDelete={() => handleRemoveSkill(item)}
-                sx={{ bgcolor: '#654f52', color: '#fff', '& .MuiChip-deleteIcon': { color: '#fff' } }}
-              />
-            ))}
+          {/* Skills (Read-only from DB) */}
+          <Typography variant="h6" fontWeight="bold" mb={1.5}>Skills</Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {Array.isArray(resume?.skills) &&
+              resume.skills.map((item) => (
+                <Chip
+                  key={item}
+                  label={item}
+                  sx={{ bgcolor: '#654f52', color: '#fff', fontWeight: 'bold' }}
+                />
+              ))}
           </Stack>
 
           <Divider sx={{ my: 3 }} />
@@ -277,6 +212,13 @@ function Edit({ resume, setResume }) {
               <TextField label="Description" multiline rows={2} fullWidth value={exp.description} onChange={(e) => updateArrayItem('experience', idx, 'description', e.target.value)} />
             </Stack>
           ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => addArrayItem('experience', { role: '', company: '', duration: '', location: '', description: '' })}
+          >
+            + Add Experience
+          </Button>
 
           <Divider sx={{ my: 3 }} />
 
@@ -293,6 +235,13 @@ function Edit({ resume, setResume }) {
               <TextField label="Description" multiline rows={2} fullWidth value={proj.description} onChange={(e) => updateArrayItem('projects', idx, 'description', e.target.value)} />
             </Stack>
           ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => addArrayItem('projects', { title: '', techStack: '', date: '', link: '', description: '' })}
+          >
+            + Add Project
+          </Button>
 
           <Divider sx={{ my: 3 }} />
 
@@ -305,6 +254,13 @@ function Edit({ resume, setResume }) {
               <TextField label="Description" multiline rows={2} fullWidth value={cert.description} onChange={(e) => updateArrayItem('certificates', idx, 'description', e.target.value)} />
             </Stack>
           ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => addArrayItem('certificates', { title: '', link: '', description: '' })}
+          >
+            + Add Certificate
+          </Button>
 
           <Divider sx={{ my: 3 }} />
 
@@ -332,6 +288,13 @@ function Edit({ resume, setResume }) {
               <TextField label="Description" multiline rows={2} fullWidth value={edu.description} onChange={(e) => updateArrayItem('education', idx, 'description', e.target.value)} />
             </Stack>
           ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => addArrayItem('education', { degree: '', college: '', duration: '', location: '', description: '' })}
+          >
+            + Add Education
+          </Button>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end" mt={4}>
             <Button variant="outlined" onClick={handleClose}>Cancel</Button>

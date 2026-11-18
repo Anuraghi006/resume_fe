@@ -15,12 +15,6 @@ function Info() {
     github: '',
     portfolio: '',
     summary: '',
-    skillCategories: {
-      frontend: '',
-      apis: '',
-      backend: '',
-      tools: '',
-    },
     skills: [],
     experience: [
       { role: '', company: '', duration: '', location: '', description: '' },
