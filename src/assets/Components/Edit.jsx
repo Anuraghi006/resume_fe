@@ -27,7 +27,7 @@ const style = {
   maxHeight: '90vh',
   overflowY: 'auto',
   bgcolor: '#FAFAFA',
-  border: '1px solid #555',
+  border: '1px solid #d7e084',
   boxShadow: 24,
   borderRadius: 1,
   p: 4,
@@ -98,14 +98,14 @@ function Edit({ resume, setResume }) {
       <Button
         startIcon={<FaEdit />}
         onClick={handleOpen}
-        sx={{ color: '#7B4A2E', fontWeight: 600 }}
+        sx={{ color: '#b1b553', fontWeight: 600 }}
       >
         Edit CV
       </Button>
 
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title">
         <Box sx={style}>
-          <Box sx={{ bgcolor: '#6B5658', color: 'white', p: 2, mb: 3 }}>
+          <Box sx={{ bgcolor: '#fffb00', color: 'white', p: 2, mb: 3 }}>
             <Typography variant="h6">Edit Resume Details</Typography>
           </Box>
 
@@ -178,7 +178,7 @@ function Edit({ resume, setResume }) {
 
           {/* Summary (Read-only from DB) */}
           <Typography variant="h6" fontWeight="bold" mb={1}>Professional Summary</Typography>
-          <Typography sx={{ color: '#555', lineHeight: 1.8 }}>
+          <Typography sx={{ color: '#000000', lineHeight: 1.8 }}>
             {resume?.summary}
           </Typography>
 
@@ -192,7 +192,7 @@ function Edit({ resume, setResume }) {
                 <Chip
                   key={item}
                   label={item}
-                  sx={{ bgcolor: '#654f52', color: '#fff', fontWeight: 'bold' }}
+                  sx={{ bgcolor: '#b5b53b', color: '#fff', fontWeight: 'bold' }}
                 />
               ))}
           </Stack>
@@ -301,8 +301,7 @@ function Edit({ resume, setResume }) {
             <Button
               onClick={handleUpdate}
               variant="contained"
-              sx={{ bgcolor: '#6B5658', '&:hover': { bgcolor: '#5A4547' } }}
-            >
+        sx={{ color: '#b1b553', fontWeight: 600, '&:hover': { bgcolor: '#5A4547' } }}            >
               UPDATE CV
             </Button>
           </Stack>
